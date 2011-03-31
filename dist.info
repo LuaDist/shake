@@ -1,0 +1,15 @@
+--- This file is part of LuaDist project
+
+name = "shake"
+version = "1.0.1"
+
+desc = "A Simple Lua Test Engine"
+license = "MIT/X11"
+url = "http://shake.luaforge.net/"
+maintainer = "Peter Drahoš"
+
+depends = {
+	"lua ~> 5.1",
+	"leg >= 0.1.2",
+	"luafilesystem >= 1.3.0"
+}
