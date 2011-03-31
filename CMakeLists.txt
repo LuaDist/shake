@@ -1,18 +1,19 @@
-# Copyright (C) 2007-2010 LuaDist.
+# Copyright (C) 2007-2011 LuaDist.
 # Submitted by David Manura
 # Redistribution and use of this file is allowed according to the terms of the MIT license.
 # For details see the COPYRIGHT file distributed with LuaDist.
 # Please note that the package source code is licensed under its own license.
 
-PROJECT(shake NONE)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-INCLUDE(dist.cmake)
+project ( shake NONE )
+cmake_minimum_required ( VERSION 2.6 )
+include ( dist.cmake )
 
-# Install all files and documentation
-INSTALL (FILES src/shake/shake.lua DESTINATION ${INSTALL_LMOD})
-INSTALL (FILES src/shake/stir.lua DESTINATION ${INSTALL_LMOD}/shake)
-INSTALL (FILES README DESTINATION ${INSTALL_DATA})
-INSTALL (FILES src/bin/shake DESTINATION ${INSTALL_BIN})
-INSTALL (DIRECTORY doc/ DESTINATION ${INSTALL_DOC})
-INSTALL (DIRECTORY tests/ DESTINATION ${INSTALL_TEST})
-INSTALL (DIRECTORY src/apps DESTINATION ${INSTALL_DATA})
+install_lua_module ( shake src/shake/shake.lua )
+install_lua_module ( shake.stir src/shake/stir.lua )
+install_data ( README )
+install_data ( src/apps )
+install_lua_executable ( shake src/bin/shake )
+install_doc ( doc/ )
+install_test ( tests/ )
+
+#FIX-paths: add_lua_test ( tests/test.lua )
