@@ -7,6 +7,7 @@
 project ( shake NONE )
 cmake_minimum_required ( VERSION 2.8 )
 include ( cmake/dist.cmake )
+include ( lua )
 
 install_lua_module ( shake src/shake/shake.lua )
 install_lua_module ( shake.stir src/shake/stir.lua )
