@@ -7,6 +7,7 @@ desc = "A Simple Lua Test Engine"
 license = "MIT/X11"
 url = "http://shake.luaforge.net/"
 maintainer = "Peter Drahoš"
+author = "André Carregal, Humberto Santos"
 
 depends = {
 	"lua ~> 5.1",
