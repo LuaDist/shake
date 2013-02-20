@@ -1,0 +1,103 @@
+#!/usr/bin/env lua
+
+-------------------------------------------------------------------------------
+-- Command line runner for Shake
+--
+-- Authors: Andre Carregal, Humberto dos Anjos
+-- Copyright (c) 2007 Kepler Project
+--
+-- $Id: shake,v 1.17 2008/03/18 21:00:37 carregal Exp $
+-------------------------------------------------------------------------------
+
+require"shake"
+
+-- Shake looks first for a shake_test file and runs it if present,
+-- otherwise it looks for a user_test file and runs it if present
+
+local shake_test = "shake_test.lua"
+local user_test = "test.lua"
+local recursive = false
+
+-- checks for recursive flag
+if arg[1] == "-r" or arg[1] == "--recursive" then
+	recursive = true
+	table.remove(arg, 1)
+end
+
+-- checks for version flag
+if arg[1] == "-v" or arg[1] == "--version" then
+	print (shake._VERSION)
+	os.exit(0)
+end
+
+-- checks for help flag
+if arg[1] == "-h" or arg[1] == "--help" then
+	print (shake._DESCRIPTION.."\n\n"..[[
+Usage: shake [options] [filename]
+
+Runs a test file called filename (assuming "]]..user_test..[[" by default) in the
+current directory or any of its subdirectories if the -r option is given.
+
+Options:
+	-h, --help	Prints this help message
+	-r, --recursive	Recursively scans subdirectories for "]]..user_test..[[" files and runs them
+	-v, --version	Prints the Shake version
+]])
+	os.exit(0)
+end
+
+local filename = arg[1] or user_test
+
+_tested = false
+
+local run = shake.runner()
+
+local function _testlocal(title)
+	local f, errmsg = loadfile(shake_test)
+	if f then
+        -- passes the runner to shake_test
+		f(run)
+		return true
+	end
+	f, errmsg = io.open(filename)
+	if f then
+		run:test(filename, title)
+		return true
+	end
+end		
+
+local function _iterate(path)
+    path = path or ""
+    for dir in lfs.dir(".") do
+        local attr = lfs.attributes (dir) or {}
+        if attr.mode == "directory" and dir ~= "." and dir ~= ".." then
+            lfs.chdir(dir)
+			if _testlocal(path.."/"..dir) then
+                _tested = true
+            else
+                _iterate(dir)
+            end
+			lfs.chdir("..")
+        end
+    end
+end
+
+if recursive then
+   print("Shaking the tree...\n")
+end
+
+if _testlocal() then
+    _tested = true
+elseif recursive then
+    _iterate()
+end
+
+if _tested then
+    print(run:summary())
+else
+    print("No test files found")
+end
+
+if (run.results.errors > 0) or (run.results.failed > 0)  then
+	os.exit(1)
+end

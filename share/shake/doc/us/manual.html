@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>Shake - A Simple Lua Test Engine</title>
+    <link rel="stylesheet" href="http://www.keplerproject.org/doc.css" type="text/css"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo">
+        <a href="http://shake.luaforge.net">
+		<img alt="Shake Logo" src="shake.png"/>
+	    </a>
+    </div>
+	<div id="product_name"><big><strong>Shake</strong></big></div>
+	<div id="product_description">A Simple Lua Test Engine</div>
+</div> <!-- id="product" -->
+
+<div id="main">
+	
+<div id="navigation">
+<h1>Shake</h1>
+	<ul>
+		<li><a href="index.html">Home</a>
+			<ul>
+				<li><a href="index.html#overview">Overview</a></li>
+				<li><a href="index.html#status">Status</a></li>
+				<li><a href="index.html#download">Download</a></li>
+				<li><a href="index.html#dependencies">Dependencies</a></li>
+				<li><a href="index.html#history">History</a></li>
+				<li><a href="index.html#credits">Credits</a></li>
+				<li><a href="index.html#contact">Contact us</a></li>
+			</ul>
+		</li>
+		<li><strong>Manual</strong>
+			<ul>
+				<li><a href="manual.html#introduction">Introduction</a></li>
+				<li><a href="manual.html#installation">Installation</a></li>
+				<li><a href="manual.html#running">Running</a></li>
+				<li><a href="manual.html#reference">Reference</a></li>
+			</ul>
+		</li>
+		<li><a href="examples.html">Examples</a></li>
+        <li><a href="http://luaforge.net/projects/shake/">Project</a>
+            <ul>
+                <li><a href="http://luaforge.net/tracker/?group_id=310">Bug Tracker</a></li>
+                <li><a href="http://luaforge.net/scm/?group_id=310">CVS</a></li>
+            </ul>
+        </li>
+		<li><a href="license.html">License</a></li>
+	</ul>
+</div> <!-- id="navigation" -->
+
+<div id="content">
+
+<h2><a name="introduction"></a>Introduction</h2>
+
+<p>Many Lua modules and applications use a simple pattern for internal tests. They have a script (usually called
+<code>test.lua</code>) that exercises the module API using API calls and <code>assert()</code> calls to verify
+the results. It is also common practice in those modules to use <code>print()</code> to output information about the
+test progress and to use Lua comments to inform what is being tested to whoever reads the source. Although widespread
+this approach may be too crude for those wanting to test more than one module at a time or to have a more detailed view
+of the results.</p>
+
+<p>Shake assumes that the tests have been implemented for the above scenario but offers a transparent test engine
+for those wanting the execution of the tests in batch mode or those wanting to get an overview of the various results.
+The Shake engine can inform not only the number of tests, failures and errors found in a group of test scripts, but it
+can infer information about the test context using the output and comments associated with the <code>assert()</code>
+calls.</p>
+
+<p>The main characteristic of Shake is being transparent, which means that the module authors and test writers do not have
+to be aware that tests are going to be run with Shake. As long as the tests call <code>assert()</code> Shake can obtain
+quite a lot of information from the source and run time execution. This is done through the pre-processing of the tests source
+code using <a href="http://leg.luaforge.net/">Leg</a> (and therefore
+<a href="http://www.inf.puc-rio.br/~roberto/lpeg.html">LPeg</a>) to replace every call to <code>assert()</code>
+with one that can extract information about the expressions, values and operators involved in the assertion.</p>
+
+<p>Another common alternative to testing is the one adopted by test frameworks like <a href="http://luaforge.net/projects/lunit/">lunit</a> and
+<a href="http://luaforge.net/projects/luaunit/">luaunit</a>, which offer a quite sophisticated API for those test
+scripts. For those wanting to use a <a href="http://en.wikipedia.org/wiki/XUnit">xUnit</a> style framework
+these two Lua modules are very useful but in this case the test authors have to be aware that the tests are going to be
+executed by a xUnit framework.</p>
+
+<p>One of the strong points of the xUnit framework style is being able to report failures in a much more detailed view 
+than a simple assertion. In Lua, a call to <code>assert()</code> is basically equivalent to an <code>if</code> that
+displays nice error messages (provided in the <code>assert()</code> call). Unfortunately, an assertion just checks if an
+expression is true or false and report that as an error in the second case.</p>
+
+<p>This makes the test scripts much simpler, but also means that you have to provide decent error messages for every
+assertion and that once one assertion fails, your test stops running. Another disvantage of a simple <code>assert()</code>
+call is that it is does not provide much information about what caused the error. For example, in an assertion like:</p>
+
+<pre class="example">
+assert(items == 10, "too many items")
+</pre>
+
+<p>If the assertion does not fail then you can be certain that you have 10 items, but if it fails then all you can say is that
+<code>items</code> is not the number 10. If you want to know what is the current value of <code>items</code>
+in that assertion you would have to add it to the error message.</p>
+
+<p>The Shake engine offers an alternative way to obtain that information by preprocessing the test script before it is
+executed and constructing a Lua table representation of the test execution. Once the tests are run, we can iterate over
+this results table and display a lot more information about the test execution than is usually available. In the above example
+Shake would not only be able to inform that the assertion failed, but also the value of <code>items</code> and even that
+the asserted expression involved a non terminal called "items" which was supposed to be equal to the number 10.</p>
+
+<p>Since a results table is usually quite long and have a lot of information that may be useful for some users but not others,
+Shake offers the separation of a test runner and a test reporter. A test runner is responsible for determining which test scripts
+are going to be executed and accumulating the results in the runner results table. A test reporter uses the results table and
+displays information about the results in some way. Shake offers two built in runners, one to be used in the command line
+and another to be used as a web application. Shake also offers two built in reporters, one that outputs a summary of the
+results as a text message and another that displays a much more complete report using HTML tables and CSS to format
+the results.</p>
+
+<p>For those wanting more control on the test execution and reporting, the Shake module (the engine itself) can be used
+as an standard module and offers an API for test execution and for accessing the results. For more details see the 
+<a href="examples.html">examples</a> and the API <a href="manual.html#reference">reference</a>.</p>
+
+<h2><a name="installation"></a>Installation</h2>
+
+<p>The Shake source distribution contains two components. The first one is a Lua module and command line runner,
+the second is a CGILua application runner.</p>
+
+<p>The easiest way to install the Shake module and command line runner is using
+<a href="http://www.luarocks.org">LuaRocks</a>:</p>
+
+<pre class="example">
+luarocks install shake
+</pre>
+
+<p>If you prefer to install Shake manually and you are using Unix then you can install the command line runner
+and the Shake module using the command below (where the optional <code>PREFIX</code> parameter assumes
+<code>/usr/local</code> as default):</p>
+
+<pre class="example">
+make <em>PREFIX=prefix_path</em> install
+</pre>
+
+<p>After you have the Shake engine installed you can optionally install the CGILua application using a similar command
+(note that the CGILua application cannot be installed by using LuaRocks):</p>
+
+<pre class="example">
+make <em>KEPLER_PREFIX=prefix_path</em> install_app
+</pre>
+
+<p>Finally, if you are using Kepler in Windows you would have to copy the Shake source files to your
+<em>KEPLER_BIN</em>, <em>KEPLER_LUA</em>
+(and <em>CGILUA_APPS</em> if you want to use the Shake CGILua application) directories as the example
+below shows:</p>
+
+<pre class="example">
+<em>Kepler Base</em>
+    /apps
+    /cgilua
+        /shake		-- from /src/apps/shake
+    /bin
+        shake			-- from /src/bin
+        shake.bat		-- from /src/bin
+    /lua
+        shake.lua		-- from /src/shake
+        /shake
+            stir.lua		-- from /src/shake
+</pre>
+
+<h2><a name="running"></a>Running Shake</h2>
+
+<p>Once installed Shake can be run as a command line command or as a CGILua web application.</p>
+
+<h3>Command line runner</h3>
+
+<p>The Shake command line runner is called <code>shake</code> and uses the following syntax:</p>
+
+<pre class="example">
+shake <em>[options]</em> <em>[filename]</em>
+</pre>
+
+<p>This command runs a test file called <em>filename</em> (assuming <code>test.lua</code> by default) in the
+current directory or any of its subdirectories if the <code>-r</code> option is given.</p>
+
+<p>The command options are:</p>
+
+<dl>
+	<dt><strong>-h</strong>, <strong>--help</strong></dt>
+	<dd>Prints this help message</dd>
+	
+	<dt><strong>-r</strong>, <strong>--recursive</strong></dt>
+	<dd>Recursively scans subdirectories for <code>test.lua</code> files and runs them</dd>
+	
+	<dt><strong>-v</strong>, <strong>--version</strong></dt>
+	<dd>Prints the Shake version</dd>
+</dl>
+
+<p>Check the <a href="examples.html">examples</a> page for an output of a Shake run.</p>
+
+<h3>CGILua application runner</h3>
+
+<p>If you have installed the Shake CGILua application in your <code>CGILUA_APPS</code> directory, Shake assumes
+that the tests to be run will be in the <code>SHAKE_TESTS</code> directory.  If you don't define <code>SHAKE_TESTS</code>
+in your CGILua configuration file, Shake assumes the default of <code>KEPLER_CONF.."/tests"</code>.</p>
+
+<p>The <code>SHAKE_TESTS</code> directory should contain one directory for each module that you want to test.
+When you access the URL</p>
+
+<pre class="example">
+/app.lua/shake
+</pre>
+
+<p>Shake will look into those directories for a <code>test.lua</code>
+file and execute it if present. After all the test scripts are executed Shake will report a summary of the results for all the tests
+executed.</p>
+
+<p>This report is an HTML table that also offers a link to a more detailed view to the results of a single module test run.
+Once you click on that link Shake will show the full results of the test execution, including every assertion involved, even
+the succesfull ones</p>
+
+<h2><a name="reference"></a>Reference</h2>
+
+<p>For those interested in more control over the runner and the report, Shake offers the following functions
+(check the <a href="examples.html">examples</a> for more information):</p>
+
+<dl class="reference">
+	<dt><strong><code>shake.runner()</code></strong></dt>
+	<dd>
+	Returns a Shake runner that offers the functions:
+	<dl>
+	    <dt><strong><code>runner.test(filename)</code></strong></dt>
+	    <dd>
+	    Executes a test suite and stores the results in the <code>runner.results</code> table.
+	    </dd>
+	    <dt><strong><code>runner.summary()</code></strong></dt>
+	    <dd>
+	    Outputs a summary of the results from the <code>runner.results</code> table.
+	    </dd>
+	</dl>
+	</dd>
+	<dt><strong><code>shake.isterminal(expression)</code></strong></dt>
+	<dd>
+	Returns a boolean value indicating if the expression refers to a terminal symbol.
+	</dd>
+</dl>
+
+</div> <!-- id="content" -->
+
+</div> <!-- id="main" -->
+
+<div id="about">
+	<p><a href="http://validator.w3.org/check?uri=referer">Valid XHTML 1.0!</a></p>
+	<p><small>$Id: manual.html,v 1.6 2007/12/21 22:55:20 carregal Exp $</small></p>
+</div> <!-- id="about" -->
+
+</div> <!-- id="container" -->
+
+</body>
+</html>
