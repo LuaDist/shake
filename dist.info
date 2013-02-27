@@ -1,0 +1,54 @@
+type = "x86_64"
+arch = "Ubuntu"
+author = "André Carregal, Humberto Santos"
+depends = {
+[[lua ~> 5.1]],
+[[leg >= 0.1.2]],
+[[luafilesystem >= 1.3.0]],
+}
+
+desc = "A Simple Lua Test Engine"
+version = "1.0.1"
+maintainer = "Peter Drahoš"
+files = {
+Runtime = {
+[[lib/lua/shake.lua]],
+[[lib/lua/shake/stir.lua]],
+[[bin/shake]],
+}
+,
+Documentation = {
+[[share/shake/doc//us/examples.html]],
+[[share/shake/doc//us/shake.png]],
+[[share/shake/doc//us/license.html]],
+[[share/shake/doc//us/manual.html]],
+[[share/shake/doc//us/doc.css]],
+[[share/shake/doc//us/index.html]],
+}
+,
+Data = {
+[[share/shake/README]],
+[[share/shake//apps/shake/css/shake.css]],
+[[share/shake//apps/shake/css/doc.css]],
+[[share/shake//apps/shake/helper.lua]],
+[[share/shake//apps/shake/init.lua]],
+[[share/shake//apps/shake/shake_suite.lp]],
+[[share/shake//apps/shake/shake.lp]],
+[[share/shake//apps/shake/img/shake.gif]],
+}
+,
+Test = {
+[[share/shake/test//test2_ok.lua]],
+[[share/shake/test//test.lua]],
+[[share/shake/test//test1_fail.lua]],
+[[share/shake/test//test1_error.lua]],
+[[share/shake/test//test_multiple_ok.lua]],
+[[share/shake/test//test_multiple_fail.lua]],
+[[share/shake/test//test1_ok.lua]],
+}
+,
+}
+
+license = "MIT/X11"
+name = "shake"
+url = "http://shake.luaforge.net/"
